@@ -2,7 +2,7 @@
 
 Competitor::Competitor() {
 	generateName();
-
+	wielding = NULL;
 	//generate health
 	health = 12;
 	for (int i = 0; i < 5; i++) {
@@ -10,6 +10,8 @@ Competitor::Competitor() {
 		health += nAddHealth + 2;
 	}
 	
+	cState = deciding;
+
 	armor = 10;
 }
 
@@ -27,11 +29,45 @@ void Competitor::generateName() {
 void Competitor::update() {
 
 	syncMutex->lock();
-	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << health << std::endl;
+	std::cout << ">" << firstName << " " << lastName << " has entered the arena!"  << std::endl;
 	syncMutex->unlock();
 
 	while (health > 0) {
+		
+		switch (cState) {
+		case deciding:
 
+			if (!wielding) {
+				cState = looting;
+			}
+
+			break;
+		case looting:
+
+			//TODO add proper looting, for now:
+			wielding = new Weapon;
+
+			cState = deciding;
+
+			break;
+		case attacking:
+
+			//need to choose a target
+			attack();
+
+			cState = deciding;
+
+			break;
+		case defending:
+
+
+			
+			break;
+		case moving:
+			break;
+		}
+
+		bar->arrive_and_wait();
 	}
 }
 
@@ -42,4 +78,7 @@ void Competitor::setSync(std::mutex* nSync) {
 void Competitor::attack(){}
 int Competitor::getHealth() {
 	return health;
+}
+void Competitor::setBar(std::barrier<std::_No_completion_function>* nBar) {
+	bar = nBar;
 }

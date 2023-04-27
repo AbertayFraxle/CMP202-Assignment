@@ -7,8 +7,11 @@
 #include <vector>
 #include <math.h>
 #include <mutex>
+#include <barrier>
 #include "Competitor.h"
+
 
 std::vector<std::thread> threads;
 std::mutex mutex;
 std::vector<Competitor> competitors;
+
