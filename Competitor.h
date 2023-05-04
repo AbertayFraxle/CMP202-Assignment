@@ -20,7 +20,7 @@ enum state {
 class Competitor
 {
 public:
-	Competitor();
+	Competitor(std::vector<Competitor>* nComp, int);
 	void update();
 	void generateName();
 	void setSync(std::mutex*);
@@ -28,14 +28,20 @@ public:
 	void attack();
 	int getHealth();
 	int getState();
+	int getArmor();
+	void reduceHealth(int);
+
 
 private:
 	int health, strength, armor;
 	string firstName, lastName;
+	std::mutex* healthMutex;
 	std::mutex* syncMutex;
 	Weapon* wielding;
 	state cState;
 	std::barrier<std::_No_completion_function>* bar;
+	int index;
+	std::vector<Competitor>* competitors;
 	
 };
 

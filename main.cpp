@@ -10,16 +10,20 @@ int main() {
 
 	for (auto i = 0; i < processor_count; i++) {
 
-		Competitor newComp;
+		Competitor newComp(&competitors,i);
 		newComp.setSync(&mutex);
 		newComp.setBar(&turnTick);
 		competitors.push_back(newComp);
 
 		threads.push_back(std::thread(&Competitor::update, competitors[i]));
-
+		
 	}
 
-
+	while (true) {
+		if (competitors.size() == 1) {
+			return 0;
+		}
+	}
 
 	for (auto& thread : threads) {
 		thread.join();

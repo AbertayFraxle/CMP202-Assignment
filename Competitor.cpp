@@ -1,6 +1,6 @@
 #include "Competitor.h"
 
-Competitor::Competitor() {
+Competitor::Competitor(std::vector<Competitor>* nComp, int idx) {
 	generateName();
 	wielding = NULL;
 	//generate health
@@ -9,8 +9,12 @@ Competitor::Competitor() {
 		int nAddHealth = (rand() % 8 + 1);
 		health += nAddHealth + 2;
 	}
-	
+
+	competitors = nComp;
+	index = idx;
 	cState = deciding;
+
+	healthMutex = new std::mutex;
 
 	armor = 10;
 }
@@ -29,7 +33,7 @@ void Competitor::generateName() {
 void Competitor::update() {
 
 	syncMutex->lock();
-	std::cout << ">" << firstName << " " << lastName << " has entered the arena!"  << std::endl;
+	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
 	syncMutex->unlock();
 
 	while (health > 0) {
@@ -39,6 +43,9 @@ void Competitor::update() {
 
 			if (!wielding) {
 				cState = looting;
+			}
+			else {
+				cState = attacking;
 			}
 
 			break;
@@ -57,6 +64,7 @@ void Competitor::update() {
 
 			cState = deciding;
 
+
 			break;
 		case defending:
 
@@ -68,6 +76,10 @@ void Competitor::update() {
 		}
 
 		bar->arrive_and_wait();
+	
+	}
+	if (health <= 0) {
+		
 	}
 }
 
@@ -75,10 +87,49 @@ void Competitor::setSync(std::mutex* nSync) {
 	syncMutex = nSync;
 }
 
-void Competitor::attack(){}
+void Competitor::attack(){
+
+	bool foundValid = false;
+	int targetI;
+		while (!foundValid) {
+
+			targetI = rand() % (*competitors).size();
+
+			if (targetI != index) {
+				if ((*competitors)[targetI].getHealth() > 0) {
+					foundValid = true;
+				}
+			}
+		}
+
+
+	Competitor* target = &(*competitors)[targetI];
+
+	int attackRoll = rand() % 20 + 1;
+
+	if (attackRoll != 1) {
+		if (attackRoll + strength + 3 >= target->getArmor()) {
+
+			target->reduceHealth(wielding->RollDamage());
+		}
+	}
+
+}
+
 int Competitor::getHealth() {
 	return health;
 }
 void Competitor::setBar(std::barrier<std::_No_completion_function>* nBar) {
 	bar = nBar;
+}
+
+int Competitor::getArmor() {
+
+	return armor;
+}
+
+void Competitor::reduceHealth(int reduction) {
+	healthMutex->lock();
+	health -= reduction;
+	healthMutex->unlock();
 }
