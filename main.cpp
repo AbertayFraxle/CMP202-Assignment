@@ -2,6 +2,8 @@
 
 
 int main() {
+	competitorCount = 12;
+
 	srand(time(NULL));
 	//get the amount of physical threads on the machine
 	const auto processor_count = std::thread::hardware_concurrency();
@@ -10,19 +12,13 @@ int main() {
 
 	for (auto i = 0; i < processor_count; i++) {
 
-		Competitor newComp(&competitors,i);
+		Competitor newComp(&competitors,i,&competitorCount);
 		newComp.setSync(&mutex);
 		newComp.setBar(&turnTick);
 		competitors.push_back(newComp);
 
 		threads.push_back(std::thread(&Competitor::update, competitors[i]));
 		
-	}
-
-	while (true) {
-		if (competitors.size() == 1) {
-			return 0;
-		}
 	}
 
 	for (auto& thread : threads) {

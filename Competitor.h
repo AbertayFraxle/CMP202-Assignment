@@ -20,7 +20,7 @@ enum state {
 class Competitor
 {
 public:
-	Competitor(std::vector<Competitor>* nComp, int);
+	Competitor(std::vector<Competitor>* nComp, int, int*);
 	void update();
 	void generateName();
 	void setSync(std::mutex*);
@@ -42,6 +42,8 @@ private:
 	std::barrier<std::_No_completion_function>* bar;
 	int index;
 	std::vector<Competitor>* competitors;
+
+	int* competitorCount;
 	
 };
 

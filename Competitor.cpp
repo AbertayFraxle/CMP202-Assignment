@@ -1,6 +1,6 @@
 #include "Competitor.h"
 
-Competitor::Competitor(std::vector<Competitor>* nComp, int idx) {
+Competitor::Competitor(std::vector<Competitor>* nComp, int idx, int* compCount) {
 	generateName();
 	wielding = NULL;
 	//generate health
@@ -17,6 +17,8 @@ Competitor::Competitor(std::vector<Competitor>* nComp, int idx) {
 	healthMutex = new std::mutex;
 
 	armor = 10;
+
+	competitorCount = compCount;
 }
 
 void Competitor::generateName() {
@@ -75,12 +77,14 @@ void Competitor::update() {
 			break;
 		}
 
+		if ((*competitorCount) == 1 && health > 0) {
+			std::cout << ">" << firstName << " " << lastName << " has won the battle!" << std::endl;
+		}
+
 		bar->arrive_and_wait();
 	
 	}
-	if (health <= 0) {
-		
-	}
+	bar->arrive_and_wait();
 }
 
 void Competitor::setSync(std::mutex* nSync) {
@@ -130,6 +134,11 @@ int Competitor::getArmor() {
 
 void Competitor::reduceHealth(int reduction) {
 	healthMutex->lock();
-	health -= reduction;
+	if (health > 0) {
+		health -= reduction;
+		if (health <= 0) {
+			(* competitorCount)--;
+		}
+	}
 	healthMutex->unlock();
 }

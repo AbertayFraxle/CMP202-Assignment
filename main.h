@@ -15,3 +15,5 @@ std::vector<std::thread> threads;
 std::mutex mutex;
 std::vector<Competitor> competitors;
 
+int competitorCount;
+
