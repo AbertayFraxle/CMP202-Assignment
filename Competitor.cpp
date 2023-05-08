@@ -72,9 +72,6 @@ void Competitor::update() {
 
 }
 
-void Competitor::setSync(std::mutex* nSync) {
-	syncMutex = nSync;
-}
 
 void Competitor::hasWon() {
 	std::cout << firstName << " " << lastName << " has won the battle!";
@@ -113,9 +110,6 @@ void Competitor::attack(){
 
 int Competitor::getHealth() {
 	return health;
-}
-void Competitor::setBar(std::barrier<std::_No_completion_function>* nBar) {
-	bar = nBar;
 }
 
 int Competitor::getArmor() {

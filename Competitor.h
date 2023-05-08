@@ -24,8 +24,6 @@ public:
 	Competitor(std::vector<Competitor*>* nComp, int, int*);
 	void update();
 	void generateName();
-	void setSync(std::mutex*);
-	void setBar(std::barrier<std::_No_completion_function>*);
 	void attack();
 	int getHealth();
 	int getState();
@@ -35,14 +33,11 @@ public:
 
 
 private:
-	int health, strength, armor;
+	int health, strength, armor, index;
 	string firstName, lastName;
 	std::mutex* healthMutex;
-	std::mutex* syncMutex;
 	Weapon* wielding;
 	state cState;
-	std::barrier<std::_No_completion_function>* bar;
-	int index;
 	std::vector<Competitor*>* competitors;
 	
 	bool dead;

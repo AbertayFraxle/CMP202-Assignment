@@ -9,12 +9,15 @@
 #include <mutex>
 #include <barrier>
 #include "Competitor.h"
+#include <condition_variable>
 
 
 std::vector<std::thread> threads;
-std::mutex mutex;
+std::mutex mutex, updatex;
 std::vector<Competitor*> competitors;
 std::queue<Competitor*> turnQueue;
+std::queue<Competitor*> nTurnQueue;
+std::condition_variable update;
 
 
 int competitorCount;
