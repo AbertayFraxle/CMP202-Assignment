@@ -16,7 +16,7 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 
 	healthMutex = new std::mutex;
 
-	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
+	//std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
 
 	armor = 10;
 
@@ -124,7 +124,7 @@ void Competitor::reduceHealth(int reduction, string fName, string sName) {
 		if (health <= 0) {
 			(* competitorCount)--;
 			dead = true;
-			std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
+			//std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
 		}
 	}
 	healthMutex->unlock();
