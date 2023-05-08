@@ -1,6 +1,6 @@
 #include "Competitor.h"
 
-Competitor::Competitor(std::vector<Competitor>* nComp, int idx, int* compCount) {
+Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount) {
 	generateName();
 	wielding = NULL;
 	//generate health
@@ -16,9 +16,12 @@ Competitor::Competitor(std::vector<Competitor>* nComp, int idx, int* compCount) 
 
 	healthMutex = new std::mutex;
 
+	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
+
 	armor = 10;
 
 	competitorCount = compCount;
+	dead = false;
 }
 
 void Competitor::generateName() {
@@ -34,13 +37,7 @@ void Competitor::generateName() {
 
 void Competitor::update() {
 
-	syncMutex->lock();
-	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
-	syncMutex->unlock();
-
-	while (health > 0) {
-		
-		switch (cState) {
+	switch (cState) {
 		case deciding:
 
 			if (!wielding) {
@@ -49,75 +46,69 @@ void Competitor::update() {
 			else {
 				cState = attacking;
 			}
-
 			break;
 		case looting:
-
-			//TODO add proper looting, for now:
+				//TODO add proper looting, for now:
 			wielding = new Weapon;
 
 			cState = deciding;
-
 			break;
 		case attacking:
 
 			//need to choose a target
+
 			attack();
 
 			cState = deciding;
 
-
 			break;
 		case defending:
 
-
-			
+		
 			break;
 		case moving:
 			break;
-		}
-
-		if ((*competitorCount) == 1 && health > 0) {
-			std::cout << ">" << firstName << " " << lastName << " has won the battle!" << std::endl;
-		}
-
-		bar->arrive_and_wait();
-	
 	}
-	bar->arrive_and_wait();
+
 }
 
 void Competitor::setSync(std::mutex* nSync) {
 	syncMutex = nSync;
 }
 
+void Competitor::hasWon() {
+	std::cout << firstName << " " << lastName << " has won the battle!";
+}
+
 void Competitor::attack(){
 
 	bool foundValid = false;
 	int targetI;
-		while (!foundValid) {
+	while (!foundValid) {
 
-			targetI = rand() % (*competitors).size();
+		targetI = rand() % (*competitors).size();
 
-			if (targetI != index) {
-				if ((*competitors)[targetI].getHealth() > 0) {
+		if (targetI != index) {
+			if ((*competitors)[targetI]->getHealth() > 0) {
 					foundValid = true;
-				}
 			}
-		}
-
-
-	Competitor* target = &(*competitors)[targetI];
-
-	int attackRoll = rand() % 20 + 1;
-
-	if (attackRoll != 1) {
-		if (attackRoll + strength + 3 >= target->getArmor()) {
-
-			target->reduceHealth(wielding->RollDamage());
 		}
 	}
 
+	
+		Competitor* target = (*competitors)[targetI];
+
+		int attackRoll = rand() % 20 + 1;
+
+		if (attackRoll != 1) {
+			if (attackRoll + strength + 3 >= target->getArmor()) {
+
+				if (health > 0) {
+					target->reduceHealth(wielding->RollDamage(),firstName,lastName);
+				}
+			}
+		}
+	
 }
 
 int Competitor::getHealth() {
@@ -132,12 +123,14 @@ int Competitor::getArmor() {
 	return armor;
 }
 
-void Competitor::reduceHealth(int reduction) {
+void Competitor::reduceHealth(int reduction, string fName, string sName) {
 	healthMutex->lock();
 	if (health > 0) {
 		health -= reduction;
 		if (health <= 0) {
 			(* competitorCount)--;
+			dead = true;
+			std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
 		}
 	}
 	healthMutex->unlock();

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <barrier>
 #include "Weapon.h"
+#include <queue>
 
 using std::string;
 
@@ -20,7 +21,7 @@ enum state {
 class Competitor
 {
 public:
-	Competitor(std::vector<Competitor>* nComp, int, int*);
+	Competitor(std::vector<Competitor*>* nComp, int, int*);
 	void update();
 	void generateName();
 	void setSync(std::mutex*);
@@ -29,7 +30,8 @@ public:
 	int getHealth();
 	int getState();
 	int getArmor();
-	void reduceHealth(int);
+	void hasWon();
+	void reduceHealth(int, string, string);
 
 
 private:
@@ -41,7 +43,9 @@ private:
 	state cState;
 	std::barrier<std::_No_completion_function>* bar;
 	int index;
-	std::vector<Competitor>* competitors;
+	std::vector<Competitor*>* competitors;
+	
+	bool dead;
 
 	int* competitorCount;
 	
