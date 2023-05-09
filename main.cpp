@@ -2,7 +2,7 @@
 
 
 int main() {
-	competitorCount = 12;
+	competitorCount = 10000000;
 	int roundCount = 0;
 	ready = false;
 	srand(time(NULL));
@@ -11,6 +11,8 @@ int main() {
 
 	std::cout <<"  _____ _                    ___      __        _ \n |_   _| |_  _ _ ___ __ _ __| \\ \\    / /_ _ _ _| |\n   | | | ' \\| '_/ -_) _` / _` |\\ \\/\\/ / _` | '_|_|\n   |_| |_||_|_| \\___\\__,_\\__,_| \\_/\\_/\\__,_|_| (_)\n" << std::endl;
 
+
+	//create a task farm to efficiently add competitors to the Competitors vector
 	compIndex = 0;
 	for (auto i = 0; i < processor_count; i++) {
 		threads.push_back(std::thread([&]() {
@@ -28,10 +30,12 @@ int main() {
 			}));
 	}
 
+	//join the threads
 	for (auto& thread : threads) {
 		thread.join();
 	}
 
+	//create the thread
 	threads[0] = std::thread([&]() {
 
 		while (true) {
