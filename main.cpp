@@ -2,12 +2,12 @@
 
 
 int main() {
-	competitorCount = 65535;
-
+	competitorCount = 12;
+	int roundCount = 0;
 	ready = false;
 	srand(time(NULL));
 	//get the amount of physical threads on the machine
-	const auto processor_count = std::thread::hardware_concurrency();
+	const auto processor_count = std::thread::hardware_concurrency();;
 
 	std::cout <<"  _____ _                    ___      __        _ \n |_   _| |_  _ _ ___ __ _ __| \\ \\    / /_ _ _ _| |\n   | | | ' \\| '_/ -_) _` / _` |\\ \\/\\/ / _` | '_|_|\n   |_| |_||_|_| \\___\\__,_\\__,_| \\_/\\_/\\__,_|_| (_)\n" << std::endl;
 
@@ -32,53 +32,55 @@ int main() {
 		thread.join();
 	}
 
-	/*threads[0] = std::thread([]() {
+	threads[0] = std::thread([&]() {
 
 		while (true) {
 			std::unique_lock<std::mutex> lock(updatex);
 			while (!ready) {
 				update.wait(lock);
 			}
-			if (nTurnQueue.size() == 1) { return; };
+			if (nTurnQueue.size() == 1) { 
+				update.notify_one(); return; };
 			ready = false;
 			
-			update.notify_all();
+			roundCount++;
+			std::swap(turnQueue, nTurnQueue);
+			update.notify_one();
 		}
 
 		});
-		*/
+	
 
-	for (auto i = 0; i < processor_count; i++) {
-		threads[i] = std::thread([&]() {
+
+	for (auto i = 1; i < processor_count; i++) {
+		threads[i] =std::thread([&]() {
 			while (true) {
-				std::unique_lock<std::mutex> nlock(mutex);
-				
 
+				mutex.lock();
 				if (turnQueue.size() == 0) {
-					
-					
-					//std::unique_lock<std::mutex> lock(updatex);
-					//ready = true;
-					if (nTurnQueue.size() == 1) { return; };
-					std::swap(turnQueue, nTurnQueue);
-					//update.notify_one();
 
-					
+					if (nTurnQueue.size() == 1) { mutex.unlock();
+					ready = true;
+					update.notify_one();
+					return 0; };
+					std::unique_lock<std::mutex> lock(updatex);
+					ready = true;
 
-
-					//update.wait(lock);
+					update.notify_one();
+					update.wait(lock);
 
 				}
 				else {
 
 					Competitor* current = turnQueue.front();
 					turnQueue.pop();
-
 					current->update();
 					if (current->getHealth() > 0) {
 						nTurnQueue.push(current);
 					}
+
 				};
+				mutex.unlock();
 			}
 			});
 	}
@@ -95,5 +97,7 @@ int main() {
 
 
 	nTurnQueue.front()->hasWon();
+
+	std::cout << "\n this battle took " << roundCount << " rounds";
 }
 

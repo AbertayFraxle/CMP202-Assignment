@@ -82,15 +82,38 @@ void Competitor::hasWon() {
 void Competitor::findTarget() {
 
 	bool foundValid = false;
+	int flip = rand() % 2 + 1;
+	int dir;
+	switch (flip) {
+	case 1:
+		dir = -1;
+		break;
+	case 2:
+		dir = 1;
+		break;
+	}
+
+	int attempt = 1;
+
 	while (!foundValid) {
 
-		targetI = rand() % (*competitors).size();
+		int check = index + (dir * attempt);
 
-		if (targetI != index) {
-			if ((*competitors)[targetI]->getHealth() > 0) {
+		if (check > (competitors->size() - 1) || check < 0) {
+			attempt = 1;
+			dir = -dir;
+		}
+		else {
+
+			if ((*competitors)[check]->getHealth() > 0) {
+				targetI = check;
 				foundValid = true;
 			}
+			else {
+				attempt++;
+			}
 		}
+
 	}
 }
 
@@ -134,7 +157,7 @@ void Competitor::reduceHealth(int reduction, string fName, string sName) {
 		if (health <= 0) {
 			(* competitorCount)--;
 			dead = true;
-			std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
+			//std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
 		}
 	}
 	healthMutex->unlock();
