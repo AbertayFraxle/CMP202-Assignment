@@ -2,10 +2,9 @@
 
 
 int main() {
-	competitorCount = 10000;
+	competitorCount = 65535;
 
 	ready = false;
-	int roundCount = 0;
 	srand(time(NULL));
 	//get the amount of physical threads on the machine
 	const auto processor_count = std::thread::hardware_concurrency();
@@ -33,7 +32,7 @@ int main() {
 		thread.join();
 	}
 
-	threads[0] = std::thread([&roundCount]() {
+	/*threads[0] = std::thread([]() {
 
 		while (true) {
 			std::unique_lock<std::mutex> lock(updatex);
@@ -42,29 +41,32 @@ int main() {
 			}
 			if (nTurnQueue.size() == 1) { return; };
 			ready = false;
-			std::swap(turnQueue, nTurnQueue);
-			roundCount++;
-			update.notify_one();
+			
+			update.notify_all();
 		}
 
 		});
+		*/
 
-	for (auto i = 1; i < processor_count; i++) {
+	for (auto i = 0; i < processor_count; i++) {
 		threads[i] = std::thread([&]() {
 			while (true) {
 				std::unique_lock<std::mutex> nlock(mutex);
 				
+
 				if (turnQueue.size() == 0) {
 					
 					
-					std::unique_lock<std::mutex> lock(updatex);
-					ready = true;
-					
-					update.notify_one();
+					//std::unique_lock<std::mutex> lock(updatex);
+					//ready = true;
 					if (nTurnQueue.size() == 1) { return; };
+					std::swap(turnQueue, nTurnQueue);
+					//update.notify_one();
+
+					
 
 
-					update.wait(lock);
+					//update.wait(lock);
 
 				}
 				else {
@@ -93,8 +95,5 @@ int main() {
 
 
 	nTurnQueue.front()->hasWon();
-
-	std::cout << "\n this battle took " << roundCount << " rounds of combat";
-
 }
 

@@ -30,10 +30,11 @@ public:
 	int getArmor();
 	void hasWon();
 	void reduceHealth(int, string, string);
+	void findTarget();
 
 
 private:
-	int health, strength, armor, index;
+	int health, strength, armor, index,targetI;
 	string firstName, lastName;
 	std::mutex* healthMutex;
 	Weapon* wielding;

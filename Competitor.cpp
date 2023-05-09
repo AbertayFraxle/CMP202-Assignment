@@ -16,12 +16,14 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 
 	healthMutex = new std::mutex;
 
-	//std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
+//	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
 
 	armor = 10;
 
 	competitorCount = compCount;
 	dead = false;
+
+	targetI = -1;
 }
 
 void Competitor::generateName() {
@@ -77,19 +79,27 @@ void Competitor::hasWon() {
 	std::cout << firstName << " " << lastName << " has won the battle!";
 }
 
-void Competitor::attack(){
+void Competitor::findTarget() {
 
 	bool foundValid = false;
-	int targetI;
 	while (!foundValid) {
 
 		targetI = rand() % (*competitors).size();
 
 		if (targetI != index) {
 			if ((*competitors)[targetI]->getHealth() > 0) {
-					foundValid = true;
+				foundValid = true;
 			}
 		}
+	}
+}
+
+void Competitor::attack(){
+	if (targetI == -1) {
+		findTarget();
+	}
+	if ((*competitors)[targetI]->getHealth() <= 0) {
+		findTarget();
 	}
 
 	
@@ -124,7 +134,7 @@ void Competitor::reduceHealth(int reduction, string fName, string sName) {
 		if (health <= 0) {
 			(* competitorCount)--;
 			dead = true;
-			//std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
+			std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
 		}
 	}
 	healthMutex->unlock();
