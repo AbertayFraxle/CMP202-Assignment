@@ -15,7 +15,7 @@ enum state {
 	looting,
 	attacking,
 	defending,
-	moving
+	moving,
 };
 
 class Competitor
@@ -31,17 +31,19 @@ public:
 	void hasWon();
 	void reduceHealth(int, string, string);
 	void findTarget();
+	bool isDefending();
+
 
 
 private:
-	int health, strength, armor, index,targetI;
+	int maxHealth,health, strength, armor, index,targetI;
 	string firstName, lastName;
 	std::mutex* healthMutex;
 	Weapon* wielding;
 	state cState;
 	std::vector<Competitor*>* competitors;
 	
-	bool dead;
+	bool blocking;
 
 	int* competitorCount;
 	

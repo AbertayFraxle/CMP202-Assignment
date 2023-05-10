@@ -4,11 +4,12 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 	generateName();
 	wielding = NULL;
 	//generate health
-	health = 12;
+	maxHealth = 12;
 	for (int i = 0; i < 5; i++) {
 		int nAddHealth = (rand() % 8 + 1);
-		health += nAddHealth + 2;
+		maxHealth += nAddHealth + 2;
 	}
+	health = maxHealth;
 
 	competitors = nComp;
 	index = idx;
@@ -21,7 +22,6 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 	armor = 10;
 
 	competitorCount = compCount;
-	dead = false;
 
 	targetI = -1;
 }
@@ -48,6 +48,20 @@ void Competitor::update() {
 			else {
 				cState = attacking;
 			}
+
+			if (health <= (maxHealth / 2)) {
+				
+				int defenseRoll = rand() % 100 + 1;
+
+				if (defenseRoll > 20 + (health * 2)) {
+					cState = defending;
+				}
+
+
+			}
+			
+
+				
 			break;
 		case looting:
 				//TODO add proper looting, for now:
@@ -66,6 +80,8 @@ void Competitor::update() {
 			break;
 		case defending:
 
+			blocking = true;
+			cState = deciding;
 		
 			break;
 		case moving:
@@ -125,10 +141,28 @@ void Competitor::attack(){
 		findTarget();
 	}
 
+
 	
 		Competitor* target = (*competitors)[targetI];
 
-		int attackRoll = rand() % 20 + 1;
+		int attackRoll;
+
+		if (!target->isDefending()) {
+			attackRoll = rand() % 20 + 1;
+		}
+		else {
+			int roll1 = rand() % 20 + 1;
+			int roll2 = rand() % 20 + 1;
+
+			//if the target is defending, roll the attack twice and take the lowest one
+			if (roll1 <= roll2) {
+				attackRoll = roll1;
+			}
+			else if (roll2 < roll1) {
+				attackRoll = roll2;
+			}
+		}
+
 
 		if (attackRoll != 1) {
 			if (attackRoll + strength + 3 >= target->getArmor()) {
@@ -156,9 +190,13 @@ void Competitor::reduceHealth(int reduction, string fName, string sName) {
 		health -= reduction;
 		if (health <= 0) {
 			(* competitorCount)--;
-			dead = true;
+
 			//std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
 		}
 	}
 	healthMutex->unlock();
+}
+
+bool Competitor::isDefending() {
+	return blocking;
 }

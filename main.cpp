@@ -2,7 +2,7 @@
 
 
 int main() {
-	competitorCount = 10000000;
+	competitorCount = 100000;
 	int roundCount = 0;
 	ready = false;
 	srand(time(NULL));
