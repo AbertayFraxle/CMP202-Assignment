@@ -13,8 +13,6 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 
 	competitors = nComp;
 	index = idx;
-	cState = deciding;
-
 	healthMutex = new std::mutex;
 
 //	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
@@ -39,53 +37,41 @@ void Competitor::generateName() {
 
 void Competitor::update() {
 
-	switch (cState) {
-		case deciding:
+	if (!wielding) {
+		cState = looting;
+	}
+	else {
+		cState = attacking;
+	}
 
-			if (!wielding) {
-				cState = looting;
-			}
-			else {
-				cState = attacking;
-			}
+	if (health <= (maxHealth / 2)) {
 
-			if (health <= (maxHealth / 2)) {
-				
-				int defenseRoll = rand() % 100 + 1;
+		int defenseRoll = rand() % 100 + 1;
 
-				if (defenseRoll > 20 + (health * 2)) {
-					cState = defending;
-				}
+		if (defenseRoll > 20 + (health * 2)) {
+			cState = defending;
+		}
+	}
 
-
-			}
-			
-
-				
-			break;
+	if (health > 0) {
+		switch (cState) {
 		case looting:
-				//TODO add proper looting, for now:
+			//TODO add proper looting, for now:
 			wielding = new Weapon;
 
-			cState = deciding;
 			break;
 		case attacking:
-
 			//need to choose a target
-
 			attack();
-
-			cState = deciding;
 
 			break;
 		case defending:
-
 			blocking = true;
-			cState = deciding;
-		
+
 			break;
 		case moving:
 			break;
+		}
 	}
 
 }
@@ -110,14 +96,19 @@ void Competitor::findTarget() {
 	}
 
 	int attempt = 1;
+	int fullWay = 0;
+	
 
 	while (!foundValid) {
+
+		if (fullWay >=2) { break; }
 
 		int check = index + (dir * attempt);
 
 		if (check > (competitors->size() - 1) || check < 0) {
 			attempt = 1;
 			dir = -dir;
+			fullWay++;
 		}
 		else {
 

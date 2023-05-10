@@ -7,7 +7,7 @@ int main() {
 	ready = false;
 	srand(time(NULL));
 	//get the amount of physical threads on the machine
-	const auto processor_count = std::thread::hardware_concurrency();;
+	const auto processor_count = 2;
 
 	std::cout <<"  _____ _                    ___      __        _ \n |_   _| |_  _ _ ___ __ _ __| \\ \\    / /_ _ _ _| |\n   | | | ' \\| '_/ -_) _` / _` |\\ \\/\\/ / _` | '_|_|\n   |_| |_||_|_| \\___\\__,_\\__,_| \\_/\\_/\\__,_|_| (_)\n" << std::endl;
 
