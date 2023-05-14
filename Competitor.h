@@ -6,7 +6,8 @@
 #include <mutex>
 #include <barrier>
 #include "Weapon.h"
-#include <queue>
+#include "Armor.h"
+#include <string>
 
 using std::string;
 
@@ -29,21 +30,25 @@ public:
 	int getState();
 	int getArmor();
 	void hasWon();
-	void reduceHealth(int, string, string);
+	void reduceHealth(int, string, string, int);
 	void findTarget();
 	bool isDefending();
+	std::string getEulogy();
 
 
 
 private:
-	int maxHealth,health, strength, armor, index,targetI;
+	int maxHealth,health, strength, AC, index,targetI;
 	string firstName, lastName;
 	std::mutex* healthMutex;
 	Weapon* wielding;
+	Armor* wearing;
 	state cState;
 	std::vector<Competitor*>* competitors;
+	std::string eulogy;
 	
 	bool blocking;
+	int turnsTaken;
 
 	int* competitorCount;
 	

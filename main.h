@@ -7,25 +7,37 @@
 #include <vector>
 #include <math.h>
 #include <mutex>
-#include <barrier>
 #include "Competitor.h"
 #include <condition_variable>
+#include <chrono>
+#include <queue>
+#include <barrier>
+#include <fstream>
 
+using std::chrono::duration_cast;
+using std::chrono::microseconds;
+using std::chrono::milliseconds;
+typedef std::chrono::steady_clock the_clock;
 
 std::vector<std::thread> threads;
 
-std::mutex mutex, updatex;
+std::mutex mutex, updatex, newtex;
+
+std::barrier<>* bar;
 
 std::condition_variable update;
 
 std::vector<Competitor*> competitors;
-std::queue<Competitor*> turnQueue;
-std::queue<Competitor*> nTurnQueue;
+std::vector<std::queue<Competitor*>> nTurnQueue;
 
-bool ready;
+bool won;
+int arriveCount;
+
+std::vector<float> times;
+
+bool ready, canCV,killLog;
 
 int competitorCount;
 int compIndex;
 
-
-void addCompetitor(int i);
+void runTurn(std::queue<Competitor*>& turns, int& counter,std::barrier<>*);

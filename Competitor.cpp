@@ -3,6 +3,7 @@
 Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount) {
 	generateName();
 	wielding = NULL;
+	wearing = NULL;
 	//generate health
 	maxHealth = 12;
 	for (int i = 0; i < 5; i++) {
@@ -11,13 +12,17 @@ Competitor::Competitor(std::vector<Competitor*>* nComp, int idx, int* compCount)
 	}
 	health = maxHealth;
 
+	strength = rand() % 4 + 1;
+
 	competitors = nComp;
 	index = idx;
 	healthMutex = new std::mutex;
 
-//	std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
+	turnsTaken = 0;
 
-	armor = 10;
+	//std::cout << ">" << firstName << " " << lastName << " has entered the arena!" << std::endl;
+
+	
 
 	competitorCount = compCount;
 
@@ -36,19 +41,30 @@ void Competitor::generateName() {
 }
 
 void Competitor::update() {
+	turnsTaken++;
+	int roll = rand() % 100 + 1;
 
 	if (!wielding) {
-		cState = looting;
+		if (roll < 90) {
+			cState = looting;
+		}
+		else {
+			cState = defending;
+		}
 	}
 	else {
-		cState = attacking;
+		if (!wearing && roll < 90) {
+			
+			cState = looting;
+		}
+		else {
+			cState = attacking;
+		}
 	}
 
 	if (health <= (maxHealth / 2)) {
 
-		int defenseRoll = rand() % 100 + 1;
-
-		if (defenseRoll > 20 + (health * 2)) {
+		if (roll > 40 + (health * 2)) {
 			cState = defending;
 		}
 	}
@@ -57,8 +73,12 @@ void Competitor::update() {
 		switch (cState) {
 		case looting:
 			//TODO add proper looting, for now:
-			wielding = new Weapon;
-
+			if (!wielding) {
+				wielding = new Weapon;
+			}
+			else {
+				wearing = new Armor;
+			}
 			break;
 		case attacking:
 			//need to choose a target
@@ -78,14 +98,16 @@ void Competitor::update() {
 
 
 void Competitor::hasWon() {
-	std::cout << firstName << " " << lastName << " has won the battle!";
+	std::cout << firstName << " " << lastName << " (" << index << ") has won the battle in " << turnsTaken << " turns!\n";
 }
 
 void Competitor::findTarget() {
 
 	bool foundValid = false;
 	int flip = rand() % 2 + 1;
-	int dir;
+	int dir = 1;
+
+	//decide whether to check positive from position or negative
 	switch (flip) {
 	case 1:
 		dir = -1;
@@ -95,13 +117,20 @@ void Competitor::findTarget() {
 		break;
 	}
 
+	//count the attempts taken
 	int attempt = 1;
+
+	//count if checked the whole way along the arena
 	int fullWay = 0;
 	
-
+	//find the next alive competitor along the chosen direction
 	while (!foundValid) {
 
-		if (fullWay >=2) { break; }
+		if (fullWay >=2) {
+
+			targetI = -1;
+
+			break; }
 
 		int check = index + (dir * attempt);
 
@@ -125,18 +154,26 @@ void Competitor::findTarget() {
 }
 
 void Competitor::attack(){
+
+	//if find a target if current one is dead or not assigned
 	if (targetI == -1) {
 		findTarget();
+		if (targetI == -1) {
+			return;
+		}
 	}
 	if ((*competitors)[targetI]->getHealth() <= 0) {
 		findTarget();
+		if (targetI == -1) {
+			return;
+		}
 	}
 
-
+	
 	
 		Competitor* target = (*competitors)[targetI];
 
-		int attackRoll;
+		int attackRoll = 0;
 
 		if (!target->isDefending()) {
 			attackRoll = rand() % 20 + 1;
@@ -154,12 +191,17 @@ void Competitor::attack(){
 			}
 		}
 
-
 		if (attackRoll != 1) {
-			if (attackRoll + strength + 3 >= target->getArmor()) {
+
+			if (attackRoll ==20){
+				if (health > 0) {
+					target->reduceHealth(wielding->RollDamage()+ wielding->RollDamage() +strength, firstName, lastName,index);
+				}
+
+			}else if (attackRoll + strength + 3 >= target->getArmor()) {
 
 				if (health > 0) {
-					target->reduceHealth(wielding->RollDamage(),firstName,lastName);
+					target->reduceHealth(wielding->RollDamage()+strength,firstName,lastName,index);
 				}
 			}
 		}
@@ -167,27 +209,37 @@ void Competitor::attack(){
 }
 
 int Competitor::getHealth() {
-	return health;
+	healthMutex->lock();
+	int rHealth = health;
+	healthMutex->unlock();
+	return rHealth;
 }
 
 int Competitor::getArmor() {
 
-	return armor;
+	if (wearing) {
+		return wearing->getAC();
+	}
+	else {
+		return 10;
+	}
 }
 
-void Competitor::reduceHealth(int reduction, string fName, string sName) {
-	healthMutex->lock();
+void Competitor::reduceHealth(int reduction, string fName, string sName, int eIndex) {
 	if (health > 0) {
 		health -= reduction;
 		if (health <= 0) {
 			(* competitorCount)--;
 
-			//std::cout << ">"<< fName <<" "<< sName << " has killed " << firstName << " " << lastName << std::endl;
+			eulogy =  "> " + fName + " " + sName  +" (" + std::to_string(eIndex) + ") has killed " + firstName + " " + lastName + " (" + std::to_string(index) + ")" + "\n";
 		}
 	}
-	healthMutex->unlock();
 }
 
 bool Competitor::isDefending() {
 	return blocking;
+}
+
+std::string Competitor::getEulogy() {
+	return eulogy;
 }
