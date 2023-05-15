@@ -179,11 +179,15 @@ int main() {
 		outFile.open("output.csv", std::ofstream::app);
 		outFile << std::to_string(i + 1) + "," + std::to_string(times[i]/1000) << "\n";
 		outFile.close();
-		avg += times[i];
+		avg += (times[i]/1000);
 	}
 	avg = avg / times.size();
 	std::cout << "\n The average round took " << avg << "ms\n";
 
+
+	int in;
+	std::cin >> in;
+	return 0;
 }
 
 
